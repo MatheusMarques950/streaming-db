@@ -33,10 +33,10 @@ FROM historico_reproducao h INNER JOIN musica m ON m.id_musica = h.id_musica
 GROUP BY m.id_musica, m.titulo HAVING COUNT(*) >= 3 ORDER BY plays DESC;
 
 -- Q7. Resumo das playlists (2 tabelas)
-SELECT p.nome AS playlist, COUNT(*) AS musicas,
-       MIN(pm.adicionada_em) AS primeira_inclusao, MAX(pm.posicao) AS ultima_posicao
+SELECT p.titulo AS playlist, COUNT(*) AS musicas,
+       MIN(pm.adicionada_em) AS primeira_inclusao, MAX(pm.adicionada_em) AS ultima_inclusao
 FROM playlist p INNER JOIN playlist_musica pm ON pm.id_playlist = p.id_playlist
-GROUP BY p.id_playlist, p.nome HAVING COUNT(*) >= 2 ORDER BY musicas DESC;
+GROUP BY p.id_playlist, p.titulo HAVING COUNT(*) >= 2 ORDER BY musicas DESC;
 
 -- Q8. Engajamento por usuário (2 tabelas)
 SELECT u.nome AS usuario, COUNT(*) AS plays,
