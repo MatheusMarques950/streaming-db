@@ -45,21 +45,21 @@ FROM usuario u INNER JOIN historico_reproducao h ON h.id_usuario = u.id_usuario
 GROUP BY u.id_usuario, u.nome HAVING COUNT(*) >= 2 ORDER BY segundos DESC;
 
 -- Q9. Taxa de skip por artista (3 tabelas)
-SELECT a.nome AS artista, COUNT(*) AS plays, SUM(h.foi_pulada) AS skips,
+SELECT a.nome_artistico AS artista, COUNT(*) AS plays, SUM(h.foi_pulada) AS skips,
        ROUND(100 * AVG(h.foi_pulada), 1) AS taxa_skip_pct
 FROM historico_reproducao h
 INNER JOIN musica_artista mar ON mar.id_musica = h.id_musica AND mar.papel = 'principal'
 INNER JOIN artista a ON a.id_artista = mar.id_artista
-GROUP BY a.id_artista, a.nome HAVING COUNT(*) >= 3 ORDER BY taxa_skip_pct DESC;
+GROUP BY a.id_artista, a.nome_artistico HAVING COUNT(*) >= 3 ORDER BY taxa_skip_pct DESC;
 
 -- Q10. Perfil acústico por artista (4 tabelas)
-SELECT a.nome AS artista, COUNT(*) AS musicas, ROUND(AVG(ma.bpm)) AS bpm_medio,
+SELECT a.nome_artistico AS artista, COUNT(*) AS musicas, ROUND(AVG(ma.bpm)) AS bpm_medio,
        MAX(ma.energia) AS maior_energia, MIN(ma.dancabilidade) AS menor_danca
 FROM artista a
 INNER JOIN musica_artista mar ON mar.id_artista = a.id_artista
 INNER JOIN musica m ON m.id_musica = mar.id_musica
 INNER JOIN metadados_acusticos ma ON ma.id_musica = m.id_musica
-GROUP BY a.id_artista, a.nome HAVING AVG(ma.energia) >= 0.5 ORDER BY maior_energia DESC;
+GROUP BY a.id_artista, a.nome_artistico HAVING AVG(ma.energia) >= 0.5 ORDER BY maior_energia DESC;
 
 -- ---------- BONIFICAÇÃO (Q11 a Q13) ----------
 -- Q11. Subconsulta: energia acima da média
@@ -84,7 +84,7 @@ ORDER BY relevancia DESC;
 -- Menor distância = música mais parecida.
 -- =====================================================================
 -- Q14. Atributos escalares (3 dimensões): BPM/300 (limite do CHECK), energia, dançabilidade
-SELECT m2.titulo, a.nome AS artista,
+SELECT m2.titulo, a.nome_artistico AS artista,
        ROUND(SQRT(
            POW(ma2.bpm / 300 - ma1.bpm / 300, 2) +
            POW(ma2.energia - ma1.energia, 2) +
@@ -109,7 +109,7 @@ WITH vetores AS (
     FROM musica m
     INNER JOIN metadados_acusticos ma ON ma.id_musica = m.id_musica
 )
-SELECT c.titulo, a.nome AS artista,
+SELECT c.titulo, a.nome_artistico AS artista,
        ROUND(SQRT(
            POW(c.v1 - r.v1, 2) + POW(c.v2 - r.v2, 2) +
            POW(c.v3 - r.v3, 2) + POW(c.v4 - r.v4, 2)
@@ -123,7 +123,7 @@ ORDER BY distancia_acustica ASC LIMIT 5;
 
 -- V1. View consolidada do catálogo
 CREATE OR REPLACE VIEW vw_catalogo_inteligente AS
-SELECT m.id_musica, m.titulo AS musica, a.nome AS artista_principal, al.titulo AS album,
+SELECT m.id_musica, m.titulo AS musica, a.nome_artistico AS artista_principal, al.titulo AS album,
        ma.bpm, ma.energia, ma.dancabilidade, COUNT(h.id_historico) AS total_reproducoes
 FROM musica m
 INNER JOIN album al ON al.id_album = m.id_album
@@ -131,6 +131,6 @@ INNER JOIN musica_artista mar ON mar.id_musica = m.id_musica AND mar.papel = 'pr
 INNER JOIN artista a ON a.id_artista = mar.id_artista
 INNER JOIN metadados_acusticos ma ON ma.id_musica = m.id_musica
 LEFT JOIN historico_reproducao h ON h.id_musica = m.id_musica
-GROUP BY m.id_musica, m.titulo, a.nome, al.titulo, ma.bpm, ma.energia, ma.dancabilidade;
+GROUP BY m.id_musica, m.titulo, a.nome_artistico, al.titulo, ma.bpm, ma.energia, ma.dancabilidade;
 
 SELECT * FROM vw_catalogo_inteligente ORDER BY total_reproducoes DESC;
