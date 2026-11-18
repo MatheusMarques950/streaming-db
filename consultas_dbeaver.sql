@@ -120,17 +120,3 @@ INNER JOIN musica_artista mar ON mar.id_musica = c.id_musica AND mar.papel = 'pr
 INNER JOIN artista a ON a.id_artista = mar.id_artista
 WHERE r.titulo = 'Afterlife'
 ORDER BY distancia_acustica ASC LIMIT 5;
-
--- V1. View consolidada do catálogo
-CREATE OR REPLACE VIEW vw_catalogo_inteligente AS
-SELECT m.id_musica, m.titulo AS musica, a.nome_artistico AS artista_principal, al.titulo AS album,
-       ma.bpm, ma.energia, ma.dancabilidade, COUNT(h.id_historico) AS total_reproducoes
-FROM musica m
-INNER JOIN album al ON al.id_album = m.id_album
-INNER JOIN musica_artista mar ON mar.id_musica = m.id_musica AND mar.papel = 'principal'
-INNER JOIN artista a ON a.id_artista = mar.id_artista
-INNER JOIN metadados_acusticos ma ON ma.id_musica = m.id_musica
-LEFT JOIN historico_reproducao h ON h.id_musica = m.id_musica
-GROUP BY m.id_musica, m.titulo, a.nome_artistico, al.titulo, ma.bpm, ma.energia, ma.dancabilidade;
-
-SELECT * FROM vw_catalogo_inteligente ORDER BY total_reproducoes DESC;
